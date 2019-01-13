@@ -5,5 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <pthread.h>
+#include <list>
+
+using namespace std;
 
 #endif // _ZZ_BASEDEF_H

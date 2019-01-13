@@ -11,6 +11,23 @@
 #define DEBUG_LOGGER 2
 #define TRACE_LOGGER 1
 
+#define LOG(level, err_num, ...) \
+  do \
+  { \
+    if ( (level) >= zz::log::getLogger()->getLogLevel() ) \
+    { \
+      zz::log::getLogger()->log(level, \
+      __FILENAME__, __FUNCTION__, __LINE__, err_num, __VA_ARGS__); \
+    } \
+  } while(0)
+
+#define LOG_TRACE(...) LOG(TRACE_LOGGER, 0, __VA_ARGS__)
+#define LOG_DEBUG(...) LOG(DEBUG_LOGGER, 0, __VA_ARGS__)
+#define LOG_INFO(...) LOG(INFO_LOGGER,   0, __VA_ARGS__)
+#define LOG_WARN(errnum, ...) LOG(WARN_LOGGER,   (errnum), __VA_ARGS__)
+#define LOG_ERROR(errnum, ...) LOG(ERROR_LOGGER, (errnum), __VA_ARGS__)
+#define LOG_FATAL(errnum, ...) LOG(FATAL_LOGGER, (errnum), __VA_ARGS__)
+
 namespace zz
 {
 
