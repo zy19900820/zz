@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
-#include "zz/zz_time.h"
+#include "src/zz_time.h"
 
 using namespace std;
 using namespace zz;
