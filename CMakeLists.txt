@@ -14,3 +14,7 @@ target_link_libraries(test_time gtest_main gtest zz pthread)
 FILE(GLOB TEST_LOG_SRC ./test/test_log.cpp)
 add_executable(test_log ${TEST_LOG_SRC})
 target_link_libraries(test_log gtest_main gtest zz pthread)
+
+FILE(GLOB TEST_BASECLASS_SRC ./test/test_baseclass.cpp)
+add_executable(test_baseclass ${TEST_BASECLASS_SRC})
+target_link_libraries(test_baseclass gtest_main gtest zz pthread)

@@ -2,6 +2,7 @@
 #define _ZZ_BASECLASS_H
 
 #include "zz_threadlocal.h"
+#include "zz_log.h"
 
 #define COPY_ERROR_MSG(obj) this->_CopyErrorMsg(__FILE__, __LINE__, obj)
 #define SET_ERROR_MSG(...) \

@@ -17,7 +17,7 @@
     if ( (level) >= zz::log::getLogger()->getLogLevel() ) \
     { \
       zz::log::getLogger()->log(level, \
-      __FILENAME__, __FUNCTION__, __LINE__, err_num, __VA_ARGS__); \
+      __FILE__, __FUNCTION__, __LINE__, err_num, __VA_ARGS__); \
     } \
   } while(0)
 

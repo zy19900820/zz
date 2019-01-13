@@ -43,6 +43,7 @@ string SupportErrorMsg::getErrorMsg()
 void SupportErrorMsg::clearErrorMsg()
 {
   getErrorMsgData()->stack_trace_.clear();
+  getErrorMsgData()->error_msg_.clear();
 }
 
 string SupportErrorMsg::getStackTrace()
