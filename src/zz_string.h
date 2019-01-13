@@ -19,6 +19,8 @@ string toLowerCase(const string& src);
 
 string format(const char *format, ...);
 
+string replaceAll(const string& src, const string& target, const string& replacement);
+
 }
 
 #endif // _ZZ_STRING_H

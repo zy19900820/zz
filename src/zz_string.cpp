@@ -92,4 +92,17 @@ string format(const char *format, ...)
   return ret;
 }
 
+string replaceAll(const string& src, const string& target, const string& replacement)
+{
+  string ret = src;
+  size_t pos = 0;
+  for (; (pos = ret.find(target, pos)) != string::npos;) 
+  {
+    ret.erase(pos, target.length());
+    ret.insert(pos, replacement);
+    pos += replacement.length();
+  }
+  return ret;
+}
+
 }

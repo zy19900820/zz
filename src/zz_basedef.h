@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <list>
+#include <map>
 
 using namespace std;
 
