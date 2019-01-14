@@ -77,7 +77,7 @@ public:
 
   explicit SupportErrorMsg(bool use_thread_store);
 
-  ~SupportErrorMsg();
+  virtual ~SupportErrorMsg();
  
   string getErrorMsg();
 

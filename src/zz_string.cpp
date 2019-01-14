@@ -49,7 +49,7 @@ string trim(const string& src)
     break;
   }
 
-  return ret;
+  return ret.substr(start_pos, end_pos - start_pos + 1);
 }
 
 string toUpperCase(const string& src)
