@@ -1,7 +1,11 @@
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <errno.h>
 #include "zz_file.h"
 #include "zz_string.h"
+#include "zz_os.h"
 
 namespace zz
 {
@@ -78,10 +82,18 @@ string File::getFileName()
   return file_path_.c_str() + pos + 1;
 }
 
-//FIXME
 bool File::getRealPath(const string& path, string& real_path)
 {
-  real_path = path;
+  string new_path;
+  string undefine_env_name;
+  if (!os::replaceEnv(path, new_path, undefine_env_name))
+  {
+    SET_ERROR_MSG(
+            "translate to real path fail![org_path:%s, undefine_env_name:%s]",
+            path.c_str(), undefine_env_name.c_str());
+    return false;
+  }
+  real_path = new_path;
   return true;
 }
 
@@ -128,6 +140,164 @@ bool File::gzip()
     return false;
   }
   return true;
+}
+
+FileRead::FileRead() : fd_(-1), opened_(false), file_content_(NULL),
+                cur_pos_(0), file_size_(0)
+{
+  reset();
+}
+
+FileRead::FileRead(const string& path) : File(path), fd_(-1), opened_(false),
+                file_content_(NULL), cur_pos_(0), file_size_(0)
+{
+  reset();
+}
+
+FileRead::~FileRead()
+{
+  close();
+}
+
+bool FileRead::open()
+{
+  if (opened_)
+  {
+    SET_ERROR_MSG("file is opened![file_path:%s]", file_path_.c_str());
+    return false;
+  }
+  fd_ = ::open(file_path_.c_str(), O_RDONLY);
+  if (fd_ == -1)
+  {
+    SET_ERROR_MSG("open file fail![file_path:%s, reason:%s, errno:%d",
+                file_path_.c_str(), strerror(errno), errno);
+    return false;
+  }
+  struct stat sb;
+  if (fstat(fd_, &sb) == -1)
+  {
+    SET_ERROR_MSG("stat file fail![file_path:%s, reason:%s, errno:%d",
+                file_path_.c_str(), strerror(errno), errno);
+    return false;
+  }
+  file_size_ = sb.st_size;
+  file_content_ = reinterpret_cast<char *>(mmap(NULL, sb.st_size, PROT_READ,
+                                        MAP_PRIVATE, fd_, 0));
+  if (file_content_ == NULL)
+  {
+    SET_ERROR_MSG("mmap file fail![file_path:%s, reason:%s, errno:%d",
+                file_path_.c_str(), strerror(errno), errno);
+    return false;
+  }
+  opened_ = true;
+  LOG_INFO("open file success for read![file_path:%s, file_content:%p, size:%d]",
+          file_path_.c_str(), file_content_, file_size_);
+  return opened_;
+}
+
+//????
+int64_t FileRead::countLine(const char *line_end_flag)
+{
+  if (eof())
+  {
+    return 0;
+  }
+  int64_t count = 0;
+  int line_flag_len = strlen(line_end_flag);
+  for (int64_t i = 0; i < file_size_; i += line_flag_len)
+  {
+    if (memcpy((void *)(file_content_ + i),
+                (const void *)line_end_flag, line_flag_len) == 0)
+    {
+      count++;
+    }
+  }
+  return count;
+}
+
+bool FileRead::eof()
+{
+  if (!opened_)
+  {
+    return true;
+  }
+  if (cur_pos_ >= file_size_)
+  {
+    return true;
+  }
+  return false;
+}
+
+const char *FileRead::readLine(int64_t& line_size, const char *line_end_flag)
+{
+  if (eof())
+  {
+    return NULL;
+  }
+  int line_flag_len = strlen(line_end_flag);
+  const char *start_addr = file_content_ + cur_pos_;
+  int64_t start_pos = cur_pos_;
+  for (; start_pos < file_size_; start_pos += line_flag_len)
+  {
+    if (memcmp((const void *) (file_content_ + start_pos),
+          (const void *) line_end_flag, line_flag_len) == 0)
+    {
+      break;
+    }
+  }
+
+  line_size = start_pos - cur_pos_;
+  cur_pos_ = start_pos + line_flag_len;
+  return start_addr;
+}
+
+string FileRead::readLine(const char *line_end_flag)
+{
+  int64_t line_size = 0;
+  const char *content = readLine(line_size, line_end_flag);
+  if (content == NULL)
+  {
+    return "";
+  }
+  return string(content, line_size);
+
+}
+
+const char *FileRead::readAll()
+{
+  if (!opened_)
+  {
+    return NULL;
+  }
+  return file_content_;
+}
+
+const char *FileRead::readRemain()
+{
+  if (!opened_)
+  {
+    return NULL;
+  }
+  return file_content_ + cur_pos_;
+}
+
+void FileRead::reset()
+{
+  opened_ = false;
+  fd_ = -1;
+  file_size_ = 0;
+  cur_pos_ = 0;
+  file_content_ = NULL;
+}
+
+void FileRead::close()
+{
+  if (opened_)
+  {
+    munmap(file_content_, file_size_);
+    ::close(fd_);
+    reset();
+  }
 }
 
 }
