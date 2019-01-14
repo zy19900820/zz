@@ -195,7 +195,6 @@ bool FileRead::open()
   return opened_;
 }
 
-//????
 int64_t FileRead::countLine(const char *line_end_flag)
 {
   if (eof())
@@ -206,7 +205,7 @@ int64_t FileRead::countLine(const char *line_end_flag)
   int line_flag_len = strlen(line_end_flag);
   for (int64_t i = 0; i < file_size_; i += line_flag_len)
   {
-    if (memcpy((void *)(file_content_ + i),
+    if (memcmp((const void *)(file_content_ + i),
                 (const void *)line_end_flag, line_flag_len) == 0)
     {
       count++;
