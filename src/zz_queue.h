@@ -90,7 +90,7 @@ public:
 private:
   struct Chunk
   {
-    T value[N];
+    T values[N];
     Chunk *pre;
     Chunk *next;
   };

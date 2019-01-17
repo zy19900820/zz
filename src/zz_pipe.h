@@ -28,12 +28,12 @@ public:
 
   /*
    * 将预读 未刷新元素 刷新到队列末端
-   * @return false表示读停止
+   * @return true 表示唤醒读取
    */
   bool flush()
   {
     if (w == end_)
-      return true;
+      return false;
 
     if (readPre.cas(w, end_) != w)
     {
@@ -41,11 +41,11 @@ public:
       // 表示读取休眠 返回false
       readPre.set(end_);
       w = end_;
-      return false;
+      return true;
     }
 
     w = end_;
-    return true;
+    return false;
   }
 
   /*
@@ -59,10 +59,10 @@ public:
   
     // 获取预读元素
     // 如果预读在队列最前 则下次预读为NULL 读取休眠
-    r = readPre.cas(&queue_.Front(), NULL);
+    r = readPre.cas(&queue_.front(), NULL);
  
     // 预读元素为NULL或者在最前端
-    if (&queue_.Front() == r || !r)
+    if (&queue_.front() == r || !r)
       return false;
 
     //最后要读取的元素在其他位置,可以放心的去读取了
@@ -74,7 +74,7 @@ public:
     if (checkRead())
     {
       //预读成功就去读取
-      value = queue_.Front();
+      value = queue_.front();
       queue_.pop();
       return true;
     }
