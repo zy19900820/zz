@@ -87,6 +87,36 @@ private:
   int64_t file_size_;
 };
 
+class FileWrite : public File
+{
+public:
+  FileWrite();
+
+  explicit FileWrite(const string& file_path);
+
+  virtual ~FileWrite();
+  
+  // 权限 O_WRONLY | O_CREAT | O_TRUNC,S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
+  bool open();
+
+  bool open(int32_t flag, mode_t mode);
+
+  bool writeLine(const string& content, const char *line_end_flag="\n");
+
+  bool writeLine(const char *content, const char *line_end_flag="\n");
+
+  bool write(const string& content);
+
+  bool write(const char *content);
+
+  bool write(const char *content, int32_t len);
+
+  void close();
+
+protected:
+  int32_t fd_;
+};
+
 }
 
 #endif // _ZZ_FILE_H

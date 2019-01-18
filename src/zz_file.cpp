@@ -299,4 +299,85 @@ void FileRead::close()
   }
 }
 
+bool FileWrite::open()
+{
+  return open(O_WRONLY | O_CREAT | O_TRUNC,
+            S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+}
+
+bool FileWrite::open(int32_t flag, mode_t mode)
+{
+  if (fd_ != -1)
+  {
+    SET_ERROR_MSG("file is opened![file_path:%d, fd:%p]", file_path_.c_str(),fd_);
+    return false;
+  }
+  fd_ = ::open(file_path_.c_str(), flag, mode);
+  if (fd_ == -1)
+  {
+    SET_ERROR_MSG("open file fail![file_path:%s, flag:%d, mode:%d, reason:%s, errno:%d",
+      file_path_.c_str(), flag, mode, strerror(errno), errno);
+    return false;
+  }
+  LOG_INFO("open file sucessful for write![fd:%d, file_path:%s]", fd_,
+      file_path_.c_str());
+  return false;
+}
+
+bool FileWrite::write(const string& content)
+{
+  return write(content.c_str(), content.length());
+}
+
+bool FileWrite::write(const char *content)
+{
+  return write(content, strlen(content));
+}
+
+bool FileWrite::write(const char *content, int32_t len)
+{
+  int32_t nwrite = 0;
+  while (nwrite < len)
+  {
+    int32_t ret = ::write(fd_, content + nwrite, len - nwrite);
+    if (ret <= 0)
+    {
+      SET_ERROR_MSG("write file fail![file_path:%s, reason:%s, errno:%d",
+                file_path_.c_str(), strerror(errno), errno);
+      return false;
+    }
+    nwrite += ret;
+  }
+  return true;
+}
+
+bool FileWrite::writeLine(const string& content, const char *line_end_flag)
+{
+  return writeLine(content.c_str(), line_end_flag);
+}
+
+bool FileWrite::writeLine(const char *content, const char *line_end_flag)
+{
+  if (!write(content))
+  {
+    return false;
+  }
+  if (!write(line_end_flag))
+  {
+    return false;
+  }
+  return true;
+}
+
+void FileWrite::close()
+{
+  if (fd_ > 0)
+  {
+    ::close(fd_);
+    LOG_INFO("close file sucessful for write ![fd:%d, file_path:%s]", fd_,
+            file_path_.c_str());
+    fd_ = -1;
+  }
+}
+
 }
