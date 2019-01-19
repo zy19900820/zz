@@ -63,18 +63,18 @@ bool Signaler::wait(int32_t timeout_ms)
   while (1)
   {
     int ret = poll(&pfd, 1, timeout_ms);
-    if (ret < 0)
+    if (ZZ_UNLIKELY(ret < 0))
     {
       if (errno == EINTR || errno == EAGAIN)
         continue;
       return false;
     }
-    else if (ret == 0)
+    else if (ZZ_UNLIKELY(ret == 0))
     {
       //超时
       return false;
     }
-    else if (ret == 1 && pfd.revents & POLLIN)
+    else if (ZZ_LIKELY(ret == 1 && pfd.revents & POLLIN))
     {
       // 收到事件
       break;
@@ -87,12 +87,12 @@ bool Signaler::wait(int32_t timeout_ms)
   }
 
   int64_t cmd = read();
-  if (cmd == -1)
+  if (ZZ_UNLIKELY(cmd == -1))
   {
     LOG_FATAL(-1, "signaler wait fail![fd:%d, ret:%lld]", fd_, cmd);
     return false;
   }
-  if (cmd > 1)
+  if (ZZ_UNLIKELY(cmd > 1))
   {
     LOG_INFO("get event more than 1");
   }
@@ -103,7 +103,7 @@ int32_t Signaler::read()
 {
   int64_t cmd = 0;
   ssize_t sz = ::read(fd_, &cmd, sizeof(cmd));
-  if (sz != sizeof(cmd))
+  if (ZZ_UNLIKELY(sz != sizeof(cmd)))
   {
     return -1;
   }
